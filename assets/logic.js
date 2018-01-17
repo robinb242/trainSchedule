@@ -11,42 +11,83 @@
     storageBucket: "clickcountdown-77d23.appspot.com",
     messagingSenderId: "645824485301"
   };
+
   firebase.initializeApp(config);
 
 //simplifies referencing firebase
-  var database = firebase.database();
+    var database = firebase.database();
+//declare variables
+    var trainName = " ";
+    var destination = " ";
+    var trainFirst = " ";
+    var frequency = " ";
+    var firstTimeConverted = " ";
+    var currentTime = " ";
+    var diffTime = " ";
+    var tRemainder = " ";
+    var minutesAway = " ";
+    var nextArrival = " ";
+    var nextArrivalFormatted = " ";
+    var newTrain = " ";
+    var keyHolder = " ";
+    var getKey = " ";
 
 
 
 //Submit button to add train
-  $("#add-train-btn").on("click", function(){
-
+  $("#add-train-btn").on("click", function(event){
+    event.preventDefault();
 
 //Assigns user input to a variable
+    trainName = $("#train-name-input").val().trim();
+    destination = $("#destination-input").val().trim();
+    trainFirst = moment($("#firstTrain-input").val().trim(), "HH:mm").format("X");
+    frequency = $("#frequency-input").val().trim();
+
+    firstTimeConverted = moment(trainFirst, "HH:mm").subtract(1, "years");
+    currentTime = moment();
+    diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+    tRemainder = diffTime % frequency;
+    minutesAway = frequency - tRemainder;
+    nextArrival = moment().add(minutesAway, "minutes");
+    nextArrivalFormatted = moment(nextArrival).format("hh:mm");
+
     var trainName = ("#train-name-input").val().trim();
     var trainDestination = ("#destination-input").val().trim();
     var trainFirst = moment($("#firstTrain-input").val().trim(), "HH:mm").format("X");
     var trainFrequency = ("#frequency-input").val().trim();
 
-//Place user input variables into an array
-    var newTrain = {
-        trainName: trainName,
-        destination: trainDestination,
-        trainFirst: trainFirst,
-        frequency: trainFrequency
-    };
 
+//Place user input variables into an array
 //uploads train input to the database.
-database.ref().push(newTrain);
+   database.ref().push({
+        trainName: trainName,
+        destination: destination,
+        trainFirst: trainFirst,
+        frequency: frequency,
+        nextArrival: nextArrival,
+        minutesAway: minutesAway
+       
+    });
+
+        
+
+
+//alerts a new train has been added to the schedule
+    alert("New Train Successfully Added to Schedule");
+
+ });
+    
 
 // Log to console
 console.log(trainName);
 console.log(destination);
 console.log(trainFirst);
 console.log(frequency);
+console.log(nextArrival);
+console.log(minutesAway);
 
-//alert new train added to schedule
-alert("New Train Successfully Added to Schedule");
+
 
 //Clears text input boxes
 $("#train-name-input").val("");
@@ -54,108 +95,50 @@ $("#destination-input").val("");
 $("#firstTrain-input").val("");
 $("#frequency-input").val("");
 
-});
+
+
+
 
 //Creat Firebase event for adding a train to the database and a row to the HTML when a user 
 //sumits an entry.
 database.ref().on("child_added", function(childSnapshot, prevChildKey) {
 
-    console.log(childSnapshot.val());
+    console.log(childSnapshot.val().trainName);
+    console.log(childSnapshot.val().destination);
+    console.log(childSnapshot.val().trainFirst);
+    console.log(childSnapshot.val().frequency);
+    console.log(childSnapshot.val().nextArrival);
+    console.log(childSnapshot.val().minutesAway);
 
  //stores everything in a variable
-    var trainName = childSnapshot.val().trainName;
-    var trainDestination = childSnapshot.val().destination;
-    var trainFirst = childSnapshot.val().first;
-    var trainFrequency = childSnapshot.val().frequency;
-
+    trainName = childSnapshot.val().trainName;
+    destination = childSnapshot.val().destination;
+    trainFirst = childSnapshot.val().trainFirst;
+    frequency = childSnapshot.val().frequency;
+    nextArrival = childSnapshot.val().nextArrival;
+    minutesAway = childSnapshot.val().minutesAway;
 // Train Info
-    console.log(trainName);
-    console.log(trainDestination);
-    console.log(trainFirst);
-    console.log(trainFrequency);
-
-//Prettyify the Train Start?
-var trainFirstPretty = moment.unix(trainFirst).format("HH:mm")
-
-
-// Next Arrival and minutes away variables
-var currentTime = moment.unix().format("HH:mm")
-
-var minutesAway = (currentTime - trainFirstPretty) % trainFrequency 
-
-var nextArrival = currentTime + minutesAway
-
+    
+});
 //add each trains data into the table
-$("#train-table > tbody").append("<tr><td>" + trainName + "</td><td>" + trainDestination + "</td><td>" +
-  trainFirstPretty + "</td><td>" + trainFrequency + "</td><td>" + nextArrival + "</td><td>" + minutesAway + "</td></tr>");
+$("#train-table > tbody").append("<tr><td>" + trainName + "</td><td>" + destination + "</td><td>" +
+  trainFirst + "</td><td>" + frequency + "</td><td>" + nextArrival + "</td><td>" + minutesAway + "</td></tr>");
+
+
+
+$("body").on("click", ".remove-train", function(){
+     $(this).closest ('tr').remove();
+     getKey = $(this).parent().parent().attr('id');
+     database.child(getKey).remove();
+
 });
 
 
 
-    // Assume the following situations.
-
-    // (TEST 1)
-    // First Train of the Day is 3:00 AM
-    // Assume Train comes every 3 minutes.
-    // Assume the current time is 3:16 AM....
-    // What time would the next train be...? (Use your brain first)
-    // It would be 3:18 -- 2 minutes away
-
-    // (TEST 2)
-    // First Train of the Day is 3:00 AM
-    // Assume Train comes every 7 minutes.
-    // Assume the current time is 3:16 AM....
-    // What time would the next train be...? (Use your brain first)
-    // It would be 3:21 -- 5 minutes away
 
 
-    // ==========================================================
 
-    // Solved Mathematically
-    // Test case 1:
-    // 16 - 00 = 16
-    // 16 % 3 = 1 (Modulus is the remainder)
-    // 3 - 1 = 2 minutes away
-    // 2 + 3:16 = 3:18
 
-    // Solved Mathematically
-    // Test case 2:
-    // 16 - 00 = 16
-    // 16 % 7 = 2 (Modulus is the remainder)
-    // 7 - 2 = 5 minutes away
-    // 5 + 3:16 = 3:21
-
-    // Assumptions
-   /* var tFrequency = 3;
-
-    // Time is 3:30 AM
-    var firstTime = "03:30";
-
-    // First Time (pushed back 1 year to make sure it comes before current time)
-    var firstTimeConverted = moment(firstTime, "hh:mm").subtract(1, "years");
-    console.log(firstTimeConverted);
-
-    // Current Time
-    var currentTime = moment();
-    console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
-
-    // Difference between the times
-    var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-    console.log("DIFFERENCE IN TIME: " + diffTime);
-
-    // Time apart (remainder)
-    var tRemainder = diffTime % tFrequency;
-    console.log(tRemainder);
-
-    // Minute Until Train
-    var tMinutesTillTrain = tFrequency - tRemainder;
-    console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
-
-    // Next Train
-    var nextTrain = moment().add(tMinutesTillTrain, "minutes");
-    console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
-  </script>
-*/
 
 
 
