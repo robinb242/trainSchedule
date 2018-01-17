@@ -25,14 +25,14 @@
 //Assigns user input to a variable
     var trainName = ("#train-name-input").val().trim();
     var trainDestination = ("#destination-input").val().trim();
-    var trainFirst = ("#firstTrain-input").val().trim();
+    var trainFirst = moment($("#firstTrain-input").val().trim(), "HH:mm").format("X");
     var trainFrequency = ("#frequency-input").val().trim();
 
 //Place user input variables into an array
     var newTrain = {
         trainName: trainName,
         destination: trainDestination,
-        first: trainFirst,
+        trainFirst: trainFirst,
         frequency: trainFrequency
     };
 
@@ -40,10 +40,10 @@
 database.ref().push(newTrain);
 
 // Log to console
-console.log(newTrain.trainName);
-console.log(newtrain.destination);
-console.log(newTrain.first);
-console.log(newTrain.frequency);
+console.log(trainName);
+console.log(destination);
+console.log(trainFirst);
+console.log(frequency);
 
 //alert new train added to schedule
 alert("New Train Successfully Added to Schedule");
