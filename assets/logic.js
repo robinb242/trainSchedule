@@ -20,7 +20,7 @@
     var trainName = " ";
     var destination = " ";
     var trainFirst = " ";
-    var frequency = " ";
+    var frequency = 0;
     var firstTimeConverted = " ";
     var currentTime = " ";
     var diffTime = " ";
@@ -32,7 +32,7 @@
     var keyHolder = " ";
     var getKey = " ";
 
-
+$(document).ready(function() {
 
 //Submit button to add train
   $("#add-train-btn").on("click", function(event){
@@ -41,7 +41,7 @@
 //Assigns user input to a variable
     trainName = $("#train-name-input").val().trim();
     destination = $("#destination-input").val().trim();
-    trainFirst = moment($("#firstTrain-input").val().trim(), "HH:mm").format("X");
+    trainFirst = /*moment(*/$("#firstTrain-input").val().trim()/*, "HH:mm").format("X")*/;
     frequency = $("#frequency-input").val().trim();
 
     firstTimeConverted = moment(trainFirst, "HH:mm").subtract(1, "years");
@@ -49,18 +49,15 @@
     diffTime = moment().diff(moment(firstTimeConverted), "minutes");
     tRemainder = diffTime % frequency;
     minutesAway = frequency - tRemainder;
-    nextArrival = moment().add(minutesAway, "minutes");
-    nextArrivalFormatted = moment(nextArrival).format("hh:mm");
+    nextTrain = moment().add(minutesAway, "minutes");
+   nextArrival = moment(nextTrain).format("hh:mm");
 
-    var trainName = ("#train-name-input").val().trim();
-    var trainDestination = ("#destination-input").val().trim();
-    var trainFirst = moment($("#firstTrain-input").val().trim(), "HH:mm").format("X");
-    var trainFrequency = ("#frequency-input").val().trim();
+
 
 
 //Place user input variables into an array
 //uploads train input to the database.
-   database.ref().push({
+   var newTrain ={  
         trainName: trainName,
         destination: destination,
         trainFirst: trainFirst,
@@ -68,25 +65,25 @@
         nextArrival: nextArrival,
         minutesAway: minutesAway
        
-    });
+    };
 
-        
+    database.ref().push(newTrain);   
 
 
 //alerts a new train has been added to the schedule
     alert("New Train Successfully Added to Schedule");
 
- });
+
     
 
 // Log to console
-console.log(trainName);
+/*console.log(trainName);
 console.log(destination);
 console.log(trainFirst);
 console.log(frequency);
 console.log(nextArrival);
 console.log(minutesAway);
-
+*/
 
 
 //Clears text input boxes
@@ -96,20 +93,19 @@ $("#firstTrain-input").val("");
 $("#frequency-input").val("");
 
 
-
-
+});
 
 //Creat Firebase event for adding a train to the database and a row to the HTML when a user 
 //sumits an entry.
 database.ref().on("child_added", function(childSnapshot, prevChildKey) {
 
-    console.log(childSnapshot.val().trainName);
+/*    console.log(childSnapshot.val().trainName);
     console.log(childSnapshot.val().destination);
     console.log(childSnapshot.val().trainFirst);
     console.log(childSnapshot.val().frequency);
     console.log(childSnapshot.val().nextArrival);
     console.log(childSnapshot.val().minutesAway);
-
+*/
  //stores everything in a variable
     trainName = childSnapshot.val().trainName;
     destination = childSnapshot.val().destination;
@@ -119,18 +115,19 @@ database.ref().on("child_added", function(childSnapshot, prevChildKey) {
     minutesAway = childSnapshot.val().minutesAway;
 // Train Info
     
-});
 //add each trains data into the table
 $("#train-table > tbody").append("<tr><td>" + trainName + "</td><td>" + destination + "</td><td>" +
-  trainFirst + "</td><td>" + frequency + "</td><td>" + nextArrival + "</td><td>" + minutesAway + "</td></tr>");
+  frequency + "</td><><td>" + nextArrival + "</td><td>" + minutesAway + "</td></tr>");
 
-
+});
 
 $("body").on("click", ".remove-train", function(){
      $(this).closest ('tr').remove();
      getKey = $(this).parent().parent().attr('id');
      database.child(getKey).remove();
 
+
+});
 });
 
 
